@@ -78,6 +78,12 @@ h1 {
     display: none !important;
 }
 
+.rules-download {
+    display: flex;
+    justify-content: center;
+    margin: 18px 0;
+}
+
 .btn-export-pdf {
     background: linear-gradient(180deg, #1a5ac6, #0d3b8e);
     color: #fff;
