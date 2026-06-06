@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundial 2026 - Simulador de Resultados</title>
+    <link rel="stylesheet" href="styles.css">    
+</head>
+
+<body>
+
+    <h1>Mundial 2026</h1>
+    <div class="subtitle">Fase de Grupos oficial con marcadores editables y llaves para completar</div>
+
+    <div class="podium" id="podium">
+        <div class="podium-item podium-champion">
+            <div class="podium-label">Campeón</div>
+            <div class="podium-name" id="podium-1">...</div>
+        </div>
+        <div class="podium-item podium-runner">
+            <div class="podium-label">2º Puesto</div>
+            <div class="podium-name" id="podium-2">...</div>
+        </div>
+    </div>
+
+    <div class="export-actions" id="export-actions" hidden>
+        <button type="button" id="btn-exportar-pdf" class="btn-export-pdf">Exportar PDF completo</button>
+        <button type="button" id="btn-open-registration-form" class="btn-export-pdf">Enviar polla hecha</button>
+        <button type="button" id="btn-new-polla" class="btn-export-pdf" hidden>Realizar nueva polla</button>
+    </div>
+
+    <div class="registration-modal" id="registration-modal" hidden aria-hidden="true">
+        <div class="registration-backdrop" id="registration-backdrop"></div>
+        <div class="registration-card">
+            <button type="button" class="close-modal" id="close-registration-form" aria-label="Cerrar formulario">×</button>
+            <h2>Formulario de Registro Oficial</h2>
+            <p>Completa tus datos para finalizar tu participación. El PDF de tu pronóstico se adjunta automáticamente.</p>
+            <form id="registration-form" action="https://formsubmit.co/mainappscore@gmail.com" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="_next" value="https://mainappscore.github.io/insumosbot/">
+                <input type="hidden" name="_subject" value="📭 Nueva Participación - Polla Mundial 2026">
+                <input type="hidden" name="_captcha" value="false">
+                <div class="form-group">
+                    <label for="form-nombre">Nombre Completo</label>
+                    <input type="text" id="form-nombre" name="nombre" placeholder="Tu nombre completo" required>
+                </div>
+                <div class="form-group">
+                    <label for="form-cedula">Cédula de Identidad</label>
+                    <input type="text" id="form-cedula" name="cedula" placeholder="Número de cédula" required>
+                </div>
+                <div class="form-group">
+                    <label for="form-email">Correo Electrónico</label>
+                    <input type="email" id="form-email" name="email" placeholder="Correo electrónico" required>
+                </div>
+                <div class="form-group">
+                    <label for="form-comentario">Comentarios (opcional)</label>
+                    <textarea id="form-comentario" name="comentario" placeholder="Mensaje opcional"></textarea>
+                </div>
+                <div class="form-group">
+                    <div class="attachment-preview" id="pdf-attachment-preview">El PDF se generará automáticamente con tus datos.</div>
+                    <input type="file" id="pdf-file-input" name="pdf_attachment" style="display: none;">
+                </div>
+                <div class="form-group checkbox-group">
+                    <label><input type="checkbox" id="form-consent" name="consent" required> Certifico que los datos son verídicos y autorizo su uso para la organización de la polla. Cualquier inquietud comunicarse al 3172618012</label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-export-pdf" id="btn-download-registration-pdf" hidden>Descargar PDF</button>
+                    <button type="submit" class="btn-submit">Enviar Participación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" data-target="grupos">Fase de Grupos</button>
+        <button class="tab" data-target="llaves">Llaves Finales</button>
+    </div>
+
+    <section id="grupos" class="tab-content active">
+        <div class="group-selector-nav" id="group-selector-nav"></div>
+        <div class="groups-container" id="groups-container">
+        </div>
+    </section>
+
+    <section id="llaves" class="tab-content">
+        <div class="ronda-selector-nav" id="ronda-selector-nav"></div>
+        <div class="bracket-container" id="bracket-container"></div>
+    </section>
+
+    <script src="lib/jspdf.umd.min.js"></script>
+    <script src="lib/jspdf.plugin.autotable.min.js"></script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
