@@ -937,6 +937,48 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    function escapeCsvValue(value) {
+        const text = String(value ?? "");
+        if (/[";\n\r]/.test(text)) {
+            return `"${text.replace(/"/g, '""')}"`;
+        }
+        return text;
+    }
+
+    function buildGroupStageCsv() {
+        const headers = ["Grupo", "Local", "Visitante", "Goles Local", "Goles Visitante", "Jugado"];
+        const rows = [headers];
+
+        Object.keys(torneoData.grupos).sort().forEach(letra => {
+            const grupo = torneoData.grupos[letra];
+            grupo.partidos.forEach(partido => {
+                rows.push([
+                    letra,
+                    partido.local,
+                    partido.visitante,
+                    partido.golesLocal ?? 0,
+                    partido.golesVisitante ?? 0,
+                    partido.jugado ? "Sí" : "No"
+                ]);
+            });
+        });
+
+        return rows.map(row => row.map(escapeCsvValue).join(";")).join("\r\n");
+    }
+
+    function descargarGruposCsv() {
+        const csvContent = buildGroupStageCsv();
+        const blob = new Blob(["\uFEFF", csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement("a");
+        enlace.href = url;
+        enlace.download = `partidos-fase-grupos-2026-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(enlace);
+        enlace.click();
+        document.body.removeChild(enlace);
+        URL.revokeObjectURL(url);
+    }
+
     // ==========================================================
     // EVENTOS
     // ==========================================================
@@ -1013,6 +1055,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("btn-exportar-pdf")?.addEventListener("click", exportarPDF);
+    document.getElementById("btn-exportar-grupos-csv")?.addEventListener("click", descargarGruposCsv);
     document.getElementById("btn-open-registration-form")?.addEventListener("click", openRegistrationForm);
     document.getElementById("btn-download-registration-pdf")?.addEventListener("click", downloadRegistrationPdf);
     document.getElementById("close-registration-form")?.addEventListener("click", hideRegistrationForm);
