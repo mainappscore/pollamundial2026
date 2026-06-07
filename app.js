@@ -383,9 +383,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderPodium() {
         const finalTop = document.getElementById("slot-final-top");
         const finalBottom = document.getElementById("slot-final-bottom");
+        const podium = document.getElementById("podium");
         const podium1 = document.getElementById("podium-1");
         const podium2 = document.getElementById("podium-2");
-        if (!finalTop || !finalBottom || !podium1 || !podium2) return;
+        if (!finalTop || !finalBottom || !podium1 || !podium2 || !podium) return;
 
         const topName = finalTop.querySelector(".team-name-bracket")?.textContent.trim() || "...";
         const bottomName = finalBottom.querySelector(".team-name-bracket")?.textContent.trim() || "...";
@@ -397,6 +398,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         podium1.textContent = champion;
         podium2.textContent = runner;
+        if (champion !== "...") { podium.removeAttribute("hidden"); }
+        else { podium.setAttribute("hidden", ""); }
         actualizarVisibilidadExportar();
     }
 
