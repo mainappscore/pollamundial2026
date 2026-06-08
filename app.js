@@ -1027,8 +1027,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let registrationCompleted = false;
     let registeredPodioKey = "";
     let registrationData = null;
-    let registrationJsonBlob = null;
-    let registrationJsonFileName = "";
 
     function getCurrentPodioKey() {
         const campeon = document.getElementById("podium-1")?.textContent.trim() || "";
@@ -1117,13 +1115,6 @@ document.addEventListener("DOMContentLoaded", () => {
             subcampeon: document.getElementById("podium-2")?.textContent.trim() || ""
         };
 
-        // Generar JSON del participante
-        registrationJsonFileName = `polla-mundial-2026-${cedula}-${new Date().toISOString().slice(0, 10)}.json`;
-        const jsonBlob = createJsonBlob();
-        if (jsonBlob) {
-            registrationJsonBlob = new File([jsonBlob], registrationJsonFileName, { type: "application/json" });
-        }
-
         guardarRegistroEnLocalStorage(registrationData);
 
         const submitBtn = form.querySelector("button[type='submit']");
@@ -1134,8 +1125,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const formData = new FormData(form);
         formData.append("pdf_attachment", registrationPdfBlob, registrationPdfFileName);
-        if (registrationJsonBlob) {
-            formData.append("json_attachment", registrationJsonBlob, registrationJsonFileName);
+
+        // Adjuntar JSON como campo de texto (FormSubmit solo soporta 1 archivo adjunto)
+        const jsonData = buildParticipantJSON();
+        if (jsonData) {
+            formData.append("predicciones_json", JSON.stringify(jsonData));
         }
 
         const xhr = new XMLHttpRequest();
@@ -1277,17 +1271,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 podio: { campeon, subcampeon }
             }
         };
-    }
-
-    function createJsonBlob() {
-        try {
-            const data = buildParticipantJSON();
-            const jsonStr = JSON.stringify(data, null, 2);
-            return new Blob([jsonStr], { type: "application/json" });
-        } catch (error) {
-            console.error("Error creando JSON:", error);
-            return null;
-        }
     }
 
     // ==========================================================
