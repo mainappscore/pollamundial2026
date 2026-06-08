@@ -1027,6 +1027,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let registrationCompleted = false;
     let registeredPodioKey = "";
     let registrationData = null;
+    let registrationJsonBlob = null;
+    let registrationJsonFileName = "";
 
     function getCurrentPodioKey() {
         const campeon = document.getElementById("podium-1")?.textContent.trim() || "";
@@ -1115,6 +1117,13 @@ document.addEventListener("DOMContentLoaded", () => {
             subcampeon: document.getElementById("podium-2")?.textContent.trim() || ""
         };
 
+        // Generar JSON del participante
+        registrationJsonFileName = `polla-mundial-2026-${cedula}-${new Date().toISOString().slice(0, 10)}.json`;
+        const jsonBlob = createJsonBlob();
+        if (jsonBlob) {
+            registrationJsonBlob = new File([jsonBlob], registrationJsonFileName, { type: "application/json" });
+        }
+
         guardarRegistroEnLocalStorage(registrationData);
 
         const submitBtn = form.querySelector("button[type='submit']");
@@ -1125,6 +1134,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const formData = new FormData(form);
         formData.append("pdf_attachment", registrationPdfBlob, registrationPdfFileName);
+        if (registrationJsonBlob) {
+            formData.append("json_attachment", registrationJsonBlob, registrationJsonFileName);
+        }
 
         const xhr = new XMLHttpRequest();
         xhr.open("POST", form.action, true);
@@ -1215,6 +1227,67 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!modal) return;
         modal.hidden = true;
         modal.setAttribute("aria-hidden", "true");
+    }
+
+    // ==========================================================
+    // GENERACIÓN DE JSON DEL PARTICIPANTE
+    // ==========================================================
+    function buildParticipantJSON() {
+        const grupos = {};
+        for (const letra in torneoData.grupos) {
+            const grupo = torneoData.grupos[letra];
+            grupos[letra] = {
+                partidos: grupo.partidos.map(p => ({
+                    local: p.local,
+                    visitante: p.visitante,
+                    golesLocal: p.golesLocal ?? 0,
+                    golesVisitante: p.golesVisitante ?? 0
+                }))
+            };
+        }
+        const llaves = {};
+        torneoData.llaves.rondas.forEach(ronda => {
+            llaves[ronda.id] = ronda.partidos.map(partido => {
+                const pid = partido.id || null;
+                const topName = getNombreEnSlot(ronda.id, pid, "top");
+                const bottomName = getNombreEnSlot(ronda.id, pid, "bottom");
+                const ganador = getGanadorPartidoLlave(ronda.id, pid);
+                const entry = {
+                    equipoTop: topName,
+                    equipoBottom: bottomName,
+                    ganador: ganador || null
+                };
+                if (pid) entry.partido = pid;
+                return entry;
+            });
+        });
+        const campeon = document.getElementById("podium-1")?.textContent.trim() || "";
+        const subcampeon = document.getElementById("podium-2")?.textContent.trim() || "";
+        return {
+            participante: {
+                nombre: registrationData?.nombre || "",
+                cedula: registrationData?.cedula || "",
+                email: registrationData?.email || "",
+                comentario: registrationData?.comentario || "",
+                fechaEnvio: registrationData?.fecha || new Date().toISOString()
+            },
+            predicciones: {
+                grupos,
+                llaves,
+                podio: { campeon, subcampeon }
+            }
+        };
+    }
+
+    function createJsonBlob() {
+        try {
+            const data = buildParticipantJSON();
+            const jsonStr = JSON.stringify(data, null, 2);
+            return new Blob([jsonStr], { type: "application/json" });
+        } catch (error) {
+            console.error("Error creando JSON:", error);
+            return null;
+        }
     }
 
     // ==========================================================
