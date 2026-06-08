@@ -162,7 +162,7 @@ const torneoData = {
         etiquetaBoton: "16avos",
         titulo: "Dieciseisavos de Final",
         partidos: [
-          { id: "P1", top: "1A", bottom: "3C/E/F/H/I" },
+          { id: "P1", top: "1A", bottom: "3G/E/F/H/I" },
           { id: "P2", top: "1B", bottom: "3E/F/G/I/J" },
           { id: "P3", top: "1C", bottom: "2F" },
           { id: "P4", top: "1D", bottom: "3B/E/F/I/J" },
@@ -172,7 +172,7 @@ const torneoData = {
           { id: "P8", top: "1H", bottom: "2J" },
           { id: "P9", top: "1I", bottom: "3C/D/F/G/H" },
           { id: "P10", top: "1J", bottom: "2H" },
-          { id: "P11", top: "1K", bottom: "3D/E/I/J/L" },
+          { id: "P11", top: "1K", bottom: "3E/H/I/J/K" },
           { id: "P12", top: "1L", bottom: "3E/H/I/J/K" },
           { id: "P13", top: "2A", bottom: "2B" },
           { id: "P14", top: "2D", bottom: "2G" },
