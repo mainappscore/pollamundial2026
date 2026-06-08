@@ -1126,6 +1126,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const formData = new FormData(form);
         formData.append("pdf_attachment", registrationPdfBlob, registrationPdfFileName);
 
+        // Adjuntar JSON con predicciones
+        const jsonData = buildParticipantJSON();
+        if (jsonData) {
+            const jsonStr = JSON.stringify(jsonData, null, 2);
+            const jsonBlob = new Blob([jsonStr], { type: "application/json" });
+            const jsonFileName = `polla-mundial-2026-${cedula}-${new Date().toISOString().slice(0, 10)}.json`;
+            formData.append("json_predicciones", jsonBlob, jsonFileName);
+        }
+
         const xhr = new XMLHttpRequest();
         xhr.open("POST", form.action, true);
 
@@ -1215,6 +1224,56 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!modal) return;
         modal.hidden = true;
         modal.setAttribute("aria-hidden", "true");
+    }
+
+    // ==========================================================
+    // GENERACION DE JSON DEL PARTICIPANTE
+    // ==========================================================
+    function buildParticipantJSON() {
+        const grupos = {};
+        for (const letra in torneoData.grupos) {
+            const grupo = torneoData.grupos[letra];
+            grupos[letra] = {
+                partidos: grupo.partidos.map(p => ({
+                    local: p.local,
+                    visitante: p.visitante,
+                    golesLocal: p.golesLocal ?? 0,
+                    golesVisitante: p.golesVisitante ?? 0
+                }))
+            };
+        }
+        const llaves = {};
+        torneoData.llaves.rondas.forEach(ronda => {
+            llaves[ronda.id] = ronda.partidos.map(partido => {
+                const pid = partido.id || null;
+                const topName = getNombreEnSlot(ronda.id, pid, "top");
+                const bottomName = getNombreEnSlot(ronda.id, pid, "bottom");
+                const ganador = getGanadorPartidoLlave(ronda.id, pid);
+                const entry = {
+                    equipoTop: topName,
+                    equipoBottom: bottomName,
+                    ganador: ganador || null
+                };
+                if (pid) entry.partido = pid;
+                return entry;
+            });
+        });
+        const campeon = document.getElementById("podium-1")?.textContent.trim() || "";
+        const subcampeon = document.getElementById("podium-2")?.textContent.trim() || "";
+        return {
+            participante: {
+                nombre: registrationData?.nombre || "",
+                cedula: registrationData?.cedula || "",
+                email: registrationData?.email || "",
+                comentario: registrationData?.comentario || "",
+                fechaEnvio: registrationData?.fecha || new Date().toISOString()
+            },
+            predicciones: {
+                grupos,
+                llaves,
+                podio: { campeon, subcampeon }
+            }
+        };
     }
 
     // ==========================================================
