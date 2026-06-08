@@ -1100,11 +1100,6 @@ document.addEventListener("DOMContentLoaded", () => {
             prepareRegistrationFormPDF();
         }
 
-        if (!registrationPdfBlob) {
-            alert("El PDF aún no está listo. Recarga la página o intenta de nuevo en unos segundos.");
-            return;
-        }
-
         registrationData = {
             nombre,
             cedula,
@@ -1124,12 +1119,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const formData = new FormData(form);
-        formData.append("pdf_attachment", registrationPdfBlob, registrationPdfFileName);
-
-        // Adjuntar JSON como campo de texto (FormSubmit solo soporta 1 archivo adjunto)
+        // Enviar JSON con predicciones (el PDF se descarga localmente)
         const jsonData = buildParticipantJSON();
         if (jsonData) {
-            formData.append("predicciones_json", JSON.stringify(jsonData));
+            const jsonStr = JSON.stringify(jsonData, null, 2);
+            const jsonBlob = new Blob([jsonStr], { type: "application/json" });
+            const jsonFileName = `polla-mundial-2026-${cedula}-${new Date().toISOString().slice(0, 10)}.json`;
+            formData.append("attachment", jsonBlob, jsonFileName);
         }
 
         const xhr = new XMLHttpRequest();
@@ -1195,7 +1191,7 @@ document.addEventListener("DOMContentLoaded", () => {
             openRegBtn.hidden = true;
             openRegBtn.setAttribute("aria-hidden", "true");
         }
-        if (newPollaBtn) {
+            alert("Formulario enviado correctamente. Puedes descargar tu PDF.");
             newPollaBtn.hidden = false;
             newPollaBtn.setAttribute("aria-hidden", "false");
         }
@@ -1224,7 +1220,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================================
-    // GENERACIÓN DE JSON DEL PARTICIPANTE
+    // GENERACION DE JSON DEL PARTICIPANTE
     // ==========================================================
     function buildParticipantJSON() {
         const grupos = {};
@@ -1272,6 +1268,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
     }
+
 
     // ==========================================================
     // EXPORTAR PDF
