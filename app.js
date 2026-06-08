@@ -847,6 +847,7 @@ function getThirdPlaceAllocation(qualifyingGroups) {
             if (ranking[2]) {
                 const stats = tabla[ranking[2]];
                 thirdPlaces.push({
+                    group: letra,
                     team: ranking[2],
                     pts: stats.pts,
                     diff: stats.gf - stats.gc,
@@ -855,16 +856,37 @@ function getThirdPlaceAllocation(qualifyingGroups) {
             }
         }
 
+        // Ordenar los 12 terceros por: puntos > diferencia de gol > goles a favor
         thirdPlaces.sort((a, b) => {
             if (b.pts !== a.pts) return b.pts - a.pts;
             if (b.diff !== a.diff) return b.diff - a.diff;
             return b.gf - a.gf;
         });
 
-        bracketSlotConfig.thirdPlaceSlots.forEach((slotId, index) => {
-            const name = thirdPlaces[index]?.team || bracketPlaceholders.get(slotId) || "...";
-            actualizarSlot(slotId, name);
-        });
+        // Los mejores 8 terceros clasifican
+        const qualifiedThirds = thirdPlaces.slice(0, 8);
+        const qualifyingGroups = qualifiedThirds.map(t => t.group);
+
+        // Buscar la asignacion en la tabla FIFA oficial
+        const allocation = getThirdPlaceAllocation(qualifyingGroups);
+
+        if (allocation) {
+            // FIRST_PLACE_ORDER = ["A","B","D","E","G","I","K","L"]
+            // thirdPlaceSlots sigue el mismo orden
+            FIRST_PLACE_ORDER.forEach((fp, idx) => {
+                const slotId = bracketSlotConfig.thirdPlaceSlots[idx];
+                const thirdGroupLetter = allocation[fp];
+                const thirdTeam = qualifiedThirds.find(t => t.group === thirdGroupLetter);
+                const name = thirdTeam ? thirdTeam.team : (bracketPlaceholders.get(slotId) || "...");
+                actualizarSlot(slotId, name);
+            });
+        } else {
+            // Fallback: llenar por orden de ranking
+            bracketSlotConfig.thirdPlaceSlots.forEach((slotId, index) => {
+                const name = thirdPlaces[index]?.team || bracketPlaceholders.get(slotId) || "...";
+                actualizarSlot(slotId, name);
+            });
+        }
     }
 
     function getBracketMatchWinner(stage, matchId) {
