@@ -1123,49 +1123,31 @@ document.addEventListener("DOMContentLoaded", () => {
             submitBtn.textContent = "Enviando...";
         }
 
-        const formData = new FormData(form);
-        formData.append("pdf_attachment", registrationPdfBlob, registrationPdfFileName);
-
-        // Adjuntar JSON con predicciones
-        const jsonData = buildParticipantJSON();
-        if (jsonData) {
-            const jsonStr = JSON.stringify(jsonData, null, 2);
-            const jsonBlob = new Blob([jsonStr], { type: "application/json" });
-            const jsonFileName = `polla-mundial-2026-${cedula}-${new Date().toISOString().slice(0, 10)}.json`;
-            formData.append("json_predicciones", jsonBlob, jsonFileName);
+        const pdfInput = document.getElementById("pdf-file-input");
+        if (pdfInput && registrationPdfBlob instanceof File) {
+            try {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(registrationPdfBlob);
+                pdfInput.files = dataTransfer.files;
+            } catch (error) {
+                console.warn("No se pudo adjuntar el PDF automáticamente al campo oculto:", error);
+            }
         }
 
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", form.action, true);
-
-        xhr.onload = function() {
-            console.log("Registro enviado a FormSubmit:", registrationData);
-            registrationCompleted = true;
-            registeredPodioKey = getCurrentPodioKey();
-            updateExportButtonState();
-            updateRegistrationAttachmentPreview();
-            showDownloadButton();
-            // update UI: hide registration/open buttons and show 'Realizar nueva polla'
-            setPostSubmissionUI();
-            alert("Formulario enviado correctamente. Ahora puedes descargar el PDF.");
-            hideRegistrationForm();
-            form.reset();
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Enviar Participación";
+        const jsonData = buildParticipantJSON();
+        if (jsonData) {
+            let jsonField = form.querySelector("input[name='predicciones_json']");
+            if (!jsonField) {
+                jsonField = document.createElement("input");
+                jsonField.type = "hidden";
+                jsonField.name = "predicciones_json";
+                form.appendChild(jsonField);
             }
-        };
+            jsonField.value = JSON.stringify(jsonData);
+        }
 
-        xhr.onerror = function() {
-            console.error("Error al enviar el formulario");
-            alert("Hubo un error al enviar. Verifica tu conexión e intenta de nuevo.");
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Enviar Participación";
-            }
-        };
-
-        xhr.send(formData);
+        console.log("Enviando formulario de registro de forma nativa a FormSubmit:", registrationData);
+        form.submit();
     }
 
     function guardarRegistroEnLocalStorage(datos) {
@@ -1227,7 +1209,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================================
-    // GENERACION DE JSON DEL PARTICIPANTE
+    // GENERACIÓN DE JSON DEL PARTICIPANTE
     // ==========================================================
     function buildParticipantJSON() {
         const grupos = {};
