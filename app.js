@@ -1088,11 +1088,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const nombre = form.nombre.value.trim();
         const cedula = form.cedula.value.trim();
         const email = form.email.value.trim();
-        const comentario = form.comentario.value.trim();
-        const consent = form.consent.checked;
+        const comentario = "";
 
-        if (!nombre || !cedula || !email || !consent) {
-            alert("Completa todos los campos obligatorios y acepta el consentimiento.");
+        if (!nombre || !cedula || !email) {
+            alert("Completa todos los campos obligatorios.");
             return;
         }
 
